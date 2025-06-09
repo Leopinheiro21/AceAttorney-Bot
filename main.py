@@ -78,41 +78,41 @@ def extrair_fala(tweet_id):
         fala = f"{autor}: {texto}"
         return fala, personagem
     except Exception as e:
-...         print(f"Erro ao extrair fala: {e}")
-...         return None, None
-... 
-... # 🔁 Processamento da menção
-... def processar_mention(mention):
-...     try:
-...         if mention.entities and "urls" in mention.entities:
-...             for url in mention.entities["urls"]:
-...                 if "twitter.com" in url["expanded_url"]:
-...                     tweet_id = url["expanded_url"].split("/")[-1]
-...                     print(f"Processando tweet: {tweet_id}")
-...                     fala, personagem = extrair_fala(tweet_id)
-...                     if fala and personagem:
-...                         gerar_video(personagem, fala)
-...                         media = api.media_upload("tribunal.mp4")
-...                         client.create_tweet(
-...                             text=f"Objection!\n@{mention.user.screen_name}",
-...                             in_reply_to_status_id=mention.id,
-...                             media_ids=[media.media_id]
-...                         )
-...                         print("Vídeo postado com sucesso!")
-...     except Exception as e:
-...         print(f"Erro ao processar menção: {e}")
-... 
-... # ▶️ Loop principal
-... print("Bot iniciado. Monitorando menções...")
-... since_id = None
-... 
-... while True:
-...     try:
-...         mentions = api.mentions_timeline(since_id=since_id, tweet_mode="extended")
-...         for mention in reversed(mentions):
-...             since_id = max(mention.id, since_id or 0)
-...             processar_mention(mention)
-...         time.sleep(15)
-...     except Exception as e:
-...         print(f"Erro no loop principal: {e}")
-...         time.sleep(15)
+         print(f"Erro ao extrair fala: {e}")
+         return None, None
+ 
+ # 🔁 Processamento da menção
+ def processar_mention(mention):
+     try:
+         if mention.entities and "urls" in mention.entities:
+             for url in mention.entities["urls"]:
+                 if "twitter.com" in url["expanded_url"]:
+                     tweet_id = url["expanded_url"].split("/")[-1]
+                     print(f"Processando tweet: {tweet_id}")
+                     fala, personagem = extrair_fala(tweet_id)
+                     if fala and personagem:
+                         gerar_video(personagem, fala)
+                         media = api.media_upload("tribunal.mp4")
+                         client.create_tweet(
+                             text=f"Objection!\n@{mention.user.screen_name}",
+                             in_reply_to_status_id=mention.id,
+                             media_ids=[media.media_id]
+                         )
+                         print("Vídeo postado com sucesso!")
+     except Exception as e:
+         print(f"Erro ao processar menção: {e}")
+ 
+ # ▶️ Loop principal
+ print("Bot iniciado. Monitorando menções...")
+ since_id = None
+ 
+ while True:
+     try:
+         mentions = api.mentions_timeline(since_id=since_id, tweet_mode="extended")
+         for mention in reversed(mentions):
+             since_id = max(mention.id, since_id or 0)
+             processar_mention(mention)
+         time.sleep(15)
+     except Exception as e:
+         print(f"Erro no loop principal: {e}")
+         time.sleep(15)
