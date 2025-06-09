@@ -118,11 +118,38 @@ since_id = None
  
 while True:
     try:
-        mentions = api.mentions_timeline(since_id=since_id, tweet_mode="extended")
-        for mention in reversed(mentions):
-            since_id = max(mention.id, since_id or 0)
-            processar_mention(mention)
+        response = client.get_users_mentions(
+            os.getenv("TWITTER_USER_ID"),
+            expansions=["author_id"],
+            tweet_fields=["created_at", "in_reply_to_user_id"],
+            max_results=5
+        )
+        
+        if response.data:
+            for tweet in response.data:
+                mention = {
+                    "id": tweet.id,
+                    "text": tweet.text,
+                    "user": {
+                        "screen_name": next(u.username for u in response.includes["users"] 
+                                      if u.id == tweet.author_id),
+                        "id": tweet.author_id
+                    },
+                    "entities": {
+                        "urls": []
+                    }
+                }
+                
+                if hasattr(tweet, 'in_reply_to_user_id'):
+                    mention['in_reply_to_status_id'] = tweet.id
+                
+                processar_mention(mention)
+                since_id = tweet.id
+
         time.sleep(15)
+    except tweepy.TweepyException as e:
+        print(f"Erro na API: {e}")
+        time.sleep(60)
     except Exception as e:
-        print(f"Erro no loop principal: {e}")
-        time.sleep(15)
+        print(f"Erro inesperado: {e}")
+        time.sleep(300)
