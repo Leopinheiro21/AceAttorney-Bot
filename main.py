@@ -19,6 +19,13 @@ client = tweepy.Client(
     access_token=access_token,
     access_token_secret=access_token_secret
 )
+try:
+    os.makedirs("temp", exist_ok=True)
+    os.makedirs("gifs/phoenix", exist_ok=True)
+    os.makedirs("gifs/edgeworth", exist_ok=True)
+except Exception as e:
+    print(f"Erro ao criar diretórios: {e}")
+    raise
 
 # 📦 Caminhos fixos
 BG_PATH = "backgrounds/courtroom.png"
@@ -69,7 +76,10 @@ def extrair_fala(tweet_id):
             if not tweet.in_reply_to_status_id:
                 break
             tweet = api.get_status(tweet.in_reply_to_status_id, tweet_mode="extended")
+        if not thread:
+            return None, None
         thread.reverse()
+        alvo = thread[-1]
 
         alvo = thread[-1]
         texto = alvo.full_text.replace('\n', ' ')
@@ -82,7 +92,7 @@ def extrair_fala(tweet_id):
         return None, None
  
  # 🔁 Processamento da menção
- def processar_mention(mention):
+def processar_mention(mention):
     try:
         if mention.entities and "urls" in mention.entities:
             for url in mention.entities["urls"]:
@@ -103,16 +113,13 @@ def extrair_fala(tweet_id):
         print(f"Erro ao processar menção: {e}")
  
  # ▶️ Loop principal
- print("Bot iniciado. Monitorando menções...")
- since_id = None
+print("Bot iniciado. Monitorando menções...")
+since_id = None
  
- while True:
+while True:
      try:
          mentions = api.mentions_timeline(since_id=since_id, tweet_mode="extended")
-         for mention in reversed(mentions):
-             since_id = max(mention.id, since_id or 0)
-             processar_mention(mention)
-         time.sleep(15)
-     except Exception as e:
-         print(f"Erro no loop principal: {e}")
-         time.sleep(15)
+        for mention in reversed(mentions):
+            since_id = max(mention.id, since_id or 0)
+            processar_mention(mention)
+        time.sleep(15)
