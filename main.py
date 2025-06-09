@@ -31,7 +31,7 @@ except Exception as e:
 BG_PATH = "backgrounds/courtroom.png"
 SOM_OBJECTION = "audio/objection.mp3"
 MUSICA_FUNDO = "audio/tema.mp3"
-FONT_PATH = "fonte/ace_font.ttf"  # Ou use Arial caso não tenha
+FONT_PATH = "fonte/ace_font.ttf"
 
 # 🎨 Função para criar uma imagem com texto (fala)
 def criar_frame_com_texto(texto, output):
