@@ -73,34 +73,34 @@ def extrair_fala(tweet_id):
 
         alvo = thread[-1]
         texto = alvo.full_text.replace('\n', ' ')
-        autor = alvo.user.screen_name
+        autor = alvo.user.screen_name  # Corrigido: era "s.creen_name"
         personagem = extrair_personagem(len(thread))
         fala = f"{autor}: {texto}"
         return fala, personagem
     except Exception as e:
-         print(f"Erro ao extrair fala: {e}")
-         return None, None
+        print(f"Erro ao extrair fala: {e}")
+        return None, None
  
  # 🔁 Processamento da menção
  def processar_mention(mention):
-     try:
-         if mention.entities and "urls" in mention.entities:
-             for url in mention.entities["urls"]:
-                 if "twitter.com" in url["expanded_url"]:
-                     tweet_id = url["expanded_url"].split("/")[-1]
-                     print(f"Processando tweet: {tweet_id}")
-                     fala, personagem = extrair_fala(tweet_id)
-                     if fala and personagem:
-                         gerar_video(personagem, fala)
-                         media = api.media_upload("tribunal.mp4")
-                         client.create_tweet(
-                             text=f"Objection!\n@{mention.user.screen_name}",
-                             in_reply_to_status_id=mention.id,
-                             media_ids=[media.media_id]
-                         )
-                         print("Vídeo postado com sucesso!")
-     except Exception as e:
-         print(f"Erro ao processar menção: {e}")
+    try:
+        if mention.entities and "urls" in mention.entities:
+            for url in mention.entities["urls"]:
+                if "twitter.com" in url["expanded_url"]:
+                    tweet_id = url["expanded_url"].split("/")[-1]
+                    print(f"Processando tweet: {tweet_id}")
+                    fala, personagem = extrair_fala(tweet_id)
+                    if fala and personagem:
+                        gerar_video(personagem, fala)
+                        media = api.media_upload("tribunal.mp4")
+                        client.create_tweet(
+                            text=f"Objection!\n@{mention.user.screen_name}",
+                            in_reply_to_status_id=mention.id,
+                            media_ids=[media.media_id]
+                        )
+                        print("Vídeo postado com sucesso!")
+    except Exception as e:
+        print(f"Erro ao processar menção: {e}")
  
  # ▶️ Loop principal
  print("Bot iniciado. Monitorando menções...")
