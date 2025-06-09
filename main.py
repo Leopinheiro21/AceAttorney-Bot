@@ -117,9 +117,12 @@ print("Bot iniciado. Monitorando menções...")
 since_id = None
  
 while True:
-     try:
-         mentions = api.mentions_timeline(since_id=since_id, tweet_mode="extended")
+    try:
+        mentions = api.mentions_timeline(since_id=since_id, tweet_mode="extended")
         for mention in reversed(mentions):
             since_id = max(mention.id, since_id or 0)
             processar_mention(mention)
+        time.sleep(15)
+    except Exception as e:
+        print(f"Erro no loop principal: {e}")
         time.sleep(15)
