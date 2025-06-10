@@ -96,23 +96,30 @@ def extrair_fala(tweet_id):
  # 🔁 Processamento da menção
 def processar_mention(mention):
     try:
-        if mention.entities and "urls" in mention.entities:
-            for url in mention.entities["urls"]:
+        texto = mention["text"].lower()
+        if "render" not in texto:
+            print("🔕 Menção ignorada (não contém 'render').")
+            return
+
+        if mention["entities"] and "urls" in mention["entities"]:
+            for url in mention["entities"]["urls"]:
                 if "twitter.com" in url["expanded_url"]:
                     tweet_id = url["expanded_url"].split("/")[-1]
-                    print(f"Processando tweet: {tweet_id}")
+                    print(f"⚙️ Processando tweet referenciado: {tweet_id}")
                     fala, personagem = extrair_fala(tweet_id)
                     if fala and personagem:
                         gerar_video(personagem, fala)
                         media = api.media_upload("tribunal.mp4")
                         client.create_tweet(
-                            text=f"Objection!\n@{mention.user.screen_name}",
-                            in_reply_to_status_id=mention.id,
+                            text=f"Objection!\n@{mention['user']['screen_name']}",
+                            in_reply_to_status_id=mention["id"],
                             media_ids=[media.media_id]
                         )
-                        print("Vídeo postado com sucesso!")
+                        print("✅ Vídeo postado com sucesso!")
+        else:
+            print("⚠️ Menção não contém link de tweet.")
     except Exception as e:
-        print(f"Erro ao processar menção: {e}")
+        print(f"❌ Erro ao processar menção: {e}")
  
  # ▶️ Loop principal
 def start_bot():
