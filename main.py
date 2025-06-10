@@ -3,6 +3,8 @@ import time
 import tweepy
 from moviepy.editor import *
 from PIL import ImageFont, ImageDraw, Image
+from flask import Flask
+from threading import Thread
 
 # 🔐 Variáveis de ambiente
 api_key = os.getenv("API_KEY")
@@ -113,43 +115,54 @@ def processar_mention(mention):
         print(f"Erro ao processar menção: {e}")
  
  # ▶️ Loop principal
-print("Bot iniciado. Monitorando menções...")
-since_id = None
- 
-while True:
-    try:
-        response = client.get_users_mentions(
-            os.getenv("TWITTER_USER_ID"),
-            expansions=["author_id"],
-            tweet_fields=["created_at", "in_reply_to_user_id"],
-            max_results=5
-        )
-        
-        if response.data:
-            for tweet in response.data:
-                mention = {
-                    "id": tweet.id,
-                    "text": tweet.text,
-                    "user": {
-                        "screen_name": next(u.username for u in response.includes["users"] 
-                                      if u.id == tweet.author_id),
-                        "id": tweet.author_id
-                    },
-                    "entities": {
-                        "urls": []
-                    }
-                }
-                
-                if hasattr(tweet, 'in_reply_to_user_id'):
-                    mention['in_reply_to_status_id'] = tweet.id
-                
-                processar_mention(mention)
-                since_id = tweet.id
+def start_bot():
+    print("Bot iniciado. Monitorando menções...")
+    since_id = None
+    while True:
+        try:
+            response = client.get_users_mentions(
+                os.getenv("TWITTER_USER_ID"),
+                expansions=["author_id"],
+                tweet_fields=["created_at", "in_reply_to_user_id"],
+                max_results=5
+            )
 
-        time.sleep(15)
-    except tweepy.TweepyException as e:
-        print(f"Erro na API: {e}")
-        time.sleep(60)
-    except Exception as e:
-        print(f"Erro inesperado: {e}")
-        time.sleep(300)
+            if response.data:
+                for tweet in response.data:
+                    mention = {
+                        "id": tweet.id,
+                        "text": tweet.text,
+                        "user": {
+                            "screen_name": next(u.username for u in response.includes["users"] 
+                                                if u.id == tweet.author_id),
+                            "id": tweet.author_id
+                        },
+                        "entities": {
+                            "urls": []
+                        }
+                    }
+
+                    if hasattr(tweet, 'in_reply_to_user_id'):
+                        mention['in_reply_to_status_id'] = tweet.id
+
+                    processar_mention(mention)
+                    since_id = tweet.id
+
+            time.sleep(15)
+        except tweepy.TweepyException as e:
+            print(f"Erro na API: {e}")
+            time.sleep(60)
+        except Exception as e:
+            print(f"Erro inesperado: {e}")
+            time.sleep(300)
+
+# 🌐 Servidor Flask obrigatório para Web Service no Render gratuito
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return "Ace Attorney Bot rodando com Flask."
+
+if __name__ == '__main__':
+    Thread(target=start_bot).start()
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
