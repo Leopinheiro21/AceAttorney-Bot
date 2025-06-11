@@ -164,12 +164,20 @@ def start_bot():
             time.sleep(300)
 
 # 🌐 Servidor Flask obrigatório para Web Service no Render gratuito
+import os
+from threading import Thread
+from flask import Flask
+
 app = Flask(__name__)
 
 @app.route('/')
 def index():
     return "Ace Attorney Bot rodando com Flask."
 
+def run_flask():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
 if __name__ == '__main__':
-    Thread(target=start_bot).start()
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
+    Thread(target=start_bot).start() 
+    Thread(target=run_flask).start()
