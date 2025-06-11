@@ -11,6 +11,7 @@ api_key = os.getenv("API_KEY")
 api_secret = os.getenv("API_SECRET")
 access_token = os.getenv("ACCESS_TOKEN")
 access_token_secret = os.getenv("ACCESS_TOKEN_SECRET")
+twitter_user_id = os.getenv("TWITTER_USER_ID")
 
 # 🔐 Autenticação com Twitter
 auth = tweepy.OAuth1UserHandler(api_key, api_secret, access_token, access_token_secret)
