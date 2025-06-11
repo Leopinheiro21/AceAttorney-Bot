@@ -130,30 +130,28 @@ def start_bot():
             response = client.get_users_mentions(
                 os.getenv("TWITTER_USER_ID"),
                 expansions=["author_id"],
-                tweet_fields=["created_at", "in_reply_to_user_id"],
-                max_results=5
+                tweet_fields=["created_at", "in_reply_to_user_id", "entities"],
+                max_results=5,
+                since_id=since_id
             )
 
             if response.data:
-                for tweet in response.data:
+                for tweet in reversed(response.data):
+                    urls = tweet.entities.get('urls', []) if tweet.entities else []
                     mention = {
                         "id": tweet.id,
                         "text": tweet.text,
                         "user": {
-                            "screen_name": next(u.username for u in response.includes["users"] 
-                                                if u.id == tweet.author_id),
+                            "screen_name": next(u.username for u in response.includes["users"] if u.id == tweet.author_id),
                             "id": tweet.author_id
                         },
                         "entities": {
-                            "urls": []
+                            "urls": urls
                         }
                     }
 
-                    if hasattr(tweet, 'in_reply_to_user_id'):
-                        mention['in_reply_to_status_id'] = tweet.id
-
                     processar_mention(mention)
-                    since_id = tweet.id
+                    since_id = max(since_id or 0, tweet.id)
 
             time.sleep(15)
         except tweepy.TweepyException as e:
@@ -162,6 +160,7 @@ def start_bot():
         except Exception as e:
             print(f"Erro inesperado: {e}")
             time.sleep(300)
+
 
 # 🌐 Servidor Flask obrigatório para Web Service no Render gratuito
 import os
